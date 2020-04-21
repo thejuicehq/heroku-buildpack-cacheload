@@ -10,6 +10,7 @@ indent() {
 
 BUILD_DIR=$1
 CACHE_DIR=$2
+HOME_FOLDER_REPLACEMENT="__CACHE_HOME__"
 
 
 echo "=====> Restoring files from cache"
@@ -17,8 +18,14 @@ echo "=====> Restoring files from cache"
 for FILENAME in $(cat ${BUILD_DIR}/.buildcache | sed '/^$/d'); do
   echo -n "${FILENAME}" | indent
 
-  SRC=${CACHE_DIR}/buildcache/${FILENAME}
-  DEST=${BUILD_DIR}/${FILENAME}
+  if [[ ${FILENAME} = \~/* ]]; then
+    WITHOUT_TILDE=$(echo ${FILENAME} | sed 's/~\///')
+    SRC=${CACHE_DIR}/buildcache/${HOME_FOLDER_REPLACEMENT}/${WITHOUT_TILDE}
+    DEST=~/${WITHOUT_TILDE}
+  else
+    SRC=${CACHE_DIR}/buildcache/${FILENAME}
+    DEST=${BUILD_DIR}/${FILENAME}
+  fi
 
   # skip non-existing files
   if ! [ -e ${SRC} ]; then
